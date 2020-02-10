@@ -1,0 +1,82 @@
+version: 2.1
+
+executors:
+  default:
+    working_directory: ~/workspace
+    docker:
+      - image: circleci/node:12
+    environment:
+      TZ: /usr/share/zoneinfo/Asia/Tokyo
+
+commands:
+  system_info:
+    steps:
+      - run:
+          name: System information
+          command: |
+            echo "Node $(node -v)"
+            echo "Yarn v$(yarn -v)"
+  setup:
+    steps:
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+      - run:
+          name: Setup
+          command: yarn install
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+
+jobs:
+  build:
+    executor:
+      name: default
+    steps:
+      - system_info
+      - checkout
+      - setup
+      - run:
+          name: Build
+          command: yarn build
+      - store_artifacts:
+          path: dist
+      - persist_to_workspace:
+          root: ~/workspace
+          paths:
+            - ./*
+  deploy:
+    executor:
+      name: default
+    steps:
+      - attach_workspace:
+          at: ~/workspace
+      - add_ssh_keys:
+          fingerprints:
+            - "cb:ad:ed:78:1f:d2:e7:d1:95:cb:0d:c3:b2:03:74:60"
+      - run:
+          name: Deploy
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            git config --global user.name "nakamura196"
+            git config --global user.email "na.kamura.1263@gmail.com"
+            yarn deploy
+
+workflows:
+  build-deploy-flow:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore:
+                - master
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - develop
