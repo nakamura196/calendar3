@@ -28,14 +28,16 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { createComponent } from '@vue/composition-api'
+
 import Logo from '~/components/Logo.vue'
 
-export default {
+export default createComponent({
   components: {
     Logo
   }
-}
+})
 </script>
 
 <style>

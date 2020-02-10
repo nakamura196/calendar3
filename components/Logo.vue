@@ -17,6 +17,11 @@
     </g>
   </svg>
 </template>
+<script lang="ts">
+import { createComponent } from '@vue/composition-api'
+
+export default createComponent({})
+</script>
 <style>
 .NuxtLogo {
   animation: 1s appear;
