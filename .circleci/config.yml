@@ -55,7 +55,7 @@ jobs:
           at: ~/workspace
       - add_ssh_keys:
           fingerprints:
-            - "cb:ad:ed:78:1f:d2:e7:d1:95:cb:0d:c3:b2:03:74:60"
+            - "f0:6b:27:a5:4f:fe:6b:ef:df:45:7d:14:b3:cd:f0:3b"
       - run:
           name: Deploy
           command: |
