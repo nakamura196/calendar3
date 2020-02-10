@@ -1,4 +1,5 @@
 import { Configuration } from '@nuxt/types'
+import colors from 'vuetify/es5/util/colors'
 
 const nuxtConfig: Configuration = {
   mode: 'spa',
@@ -44,6 +45,7 @@ const nuxtConfig: Configuration = {
   modules: [
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
+    "@nuxtjs/vuetify",
     '@nuxtjs/pwa'
   ],
   /*
