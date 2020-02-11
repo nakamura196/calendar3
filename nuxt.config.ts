@@ -42,7 +42,7 @@ export default {
     // Doc: https://github.com/nuxt-community/eslint-module
     '@nuxtjs/eslint-module',
     '@nuxt/typescript-build',
-    '@nuxtjs/vuetify',
+    '@nuxtjs/vuetify'
   ],
   /*
   ** Nuxt.js modules
@@ -67,7 +67,7 @@ export default {
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
     theme: {
-      dark: true,
+      dark: false,
       themes: {
         dark: {
           primary: colors.blue.darken2,
@@ -85,12 +85,13 @@ export default {
   ** Build configuration
   */
   build: {
-    publicPath: '/static/',
+    publicPath: '/static/'
     /*
     ** You can extend webpack config here
-    */
+
     extend (config:any, ctx:any) {
     }
+    */
   },
   router: {
     base: '/calendar3/'
