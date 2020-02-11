@@ -1,40 +1,116 @@
+
 <template>
   <div>
+    <Header
+      :header="header"
+      :url="returnUrl"
+      :label="returnLabel"
+      :u="u"
+      :description="description"
+    />
+
     <v-container class="mt-2 mb-5">
-      <!--
       <SearchForm
         :q="q"
         :collections="collections"
         :collections_query="index.collections ? Object.keys(index.collections) : []"
         :u="u"
-        :searchPlaceHolder="searchPlaceHolder"
+        :search-place-holder="searchPlaceHolder"
       />
-      -->
 
-      <v-card class="mt-5">
-        <v-card-text>
-          <v-simple-table>
-            <template v-slot:default>
-              <tbody>
-                <tr v-for="(item, index2) in items" :key="index2">
-                  <th>{{ item.year }} ({{ item.wareki }})</th>
-                  <td v-for="index in 12" :key="index" class="text-xs-right">
-                    <!-- <a :href="'list?q='+q+'&date=' + props.item.year + '-' + index + '&type=' + type" v-if="props.item.month[index-1] > 0">{{index}}月 ({{ props.item.month[index-1] }})</a> -->
-                    <router-link
-                      v-if="item.month[index-1] > 0"
-                      :to="{ path : 'item', query : { param : JSON.stringify({q: q, collections: collections}), u: u, date: item.year + '-' + index }}"
-                    >
-                      {{ index }}月 ({{ item.month[index-1] }})
-                    </router-link>
-                    <span v-else>{{ index }}月</span>
-                  </td>
-                </tr>
-              </tbody>
-            </template>
-          </v-simple-table>
-        </v-card-text>
-      </v-card>
+      <v-row class="fill-height mt-5">
+        <v-col>
+          <v-sheet height="64">
+            <v-toolbar flat color="white">
+              <v-btn fab text small @click="prev">
+                <v-icon small>
+                  mdi-chevron-left
+                </v-icon>
+              </v-btn>
+              <v-btn fab text small @click="next">
+                <v-icon small>
+                  mdi-chevron-right
+                </v-icon>
+              </v-btn>
+              <v-toolbar-title class="ml-5">
+                {{ getTitle }}
+              </v-toolbar-title>
+              <v-spacer />
+              <v-menu bottom right>
+                <template v-slot:activator="{ on }">
+                  <v-btn outlined v-on="on">
+                    <span>{{ typeToLabel[type] }}</span>
+                    <v-icon right>
+                      mdi-menu-down
+                    </v-icon>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item @click="type = 'day'">
+                    <v-list-item-title>Day</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="type = 'week'">
+                    <v-list-item-title>Week</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="type = 'month'">
+                    <v-list-item-title>Month / 月</v-list-item-title>
+                  </v-list-item>
+                  <!--
+                  <v-list-item @click="type = '4day'">
+                    <v-list-item-title>4 days</v-list-item-title>
+                  </v-list-item>
+                  -->
+                </v-list>
+              </v-menu>
+            </v-toolbar>
+          </v-sheet>
+          <v-sheet height="600">
+            <v-calendar
+              ref="calendar"
+              v-model="focus"
+              color="primary"
+              :events="events"
+              :event-margin-bottom="3"
+              :type="type"
+              locale="ja"
+              @click:event="showEvent"
+              @click:more="viewDay"
+              @click:date="viewDay"
+              @change="updateRange"
+            />
+            <v-menu
+              v-model="selectedOpen"
+              :close-on-content-click="false"
+              :activator="selectedElement"
+              offset-x
+            >
+              <v-card>
+                <v-card-text>
+                  <v-row>
+                    <v-col>
+                      <a target="_blank" :href="selectedEvent.url">
+                        <v-img :src="selectedEvent.thumbnail" :lazy-src="selectedEvent.thumbnail" />
+                      </a>
+                    </v-col>
+                    <v-col>
+                      <p>
+                        <a target="_blank" :href="selectedEvent.url">
+                          {{ selectedEvent.name }}
+                          <i class="fas fa-external-link-alt" />
+                        </a>
+                      </p>
+                      {{ selectedEvent.description }}
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
+            </v-menu>
+          </v-sheet>
+        </v-col>
+      </v-row>
     </v-container>
+
+    <Footer :footer="footer" />
   </div>
 </template>
 
@@ -79,9 +155,61 @@ export default class IndexPage extends Vue {
   searchPlaceHolder: string = ''
   index: any = {}
   collections: Array<string> = []
-  test:Array<number> = [1, 3, 4]
-  ip: string = ''
+
+  type: string = 'month'
+  events: any = []
+  typeToLabel: any = {
+    month: 'Month / 月',
+    week: 'Week',
+    day: 'Day'
+    // "4day": "4 Days"
+  }
+
+  focus: string = '2000-01-01'
+  start: any = null
+  end: any = null
+  selectedEvent: any = {}
+  selectedElement: any = null
+  selectedOpen: boolean = false
+  yearAndMonth: string = ''
+
   data: any = {}
+
+  get fullTitle () {
+    const { start, end } = this
+    if (!start || !end) {
+      return ''
+    }
+
+    const startMonth = this.monthFormatter(start)
+    const endMonth = this.monthFormatter(end)
+    const suffixMonth = startMonth === endMonth ? '' : endMonth
+
+    const startYear = start.year
+    const endYear = end.year
+    const suffixYear = startYear === endYear ? '' : endYear
+
+    const startDay = start.day + this.nth(start.day)
+    const endDay = end.day + this.nth(end.day)
+
+    switch (this.type) {
+      case 'month':
+        return `${startMonth} ${startYear}年`
+      case 'week':
+      case '4day':
+        return `${startMonth} ${startDay} ${startYear} - ${suffixMonth} ${endDay} ${suffixYear}`
+      case 'day':
+        return `${startMonth} ${startDay} ${startYear}`
+    }
+    return ''
+  }
+
+  get monthFormatter () {
+    return this.$refs.calendar.getFormatter({
+      timeZone: 'UTC',
+      month: 'long'
+    })
+  }
 
   search () {
     const data = this.filter()
@@ -249,6 +377,10 @@ export default class IndexPage extends Vue {
 
     this.u = param.u ? param.u : 'https://webpark5032.sakura.ne.jp/tmp/calendar.json'
 
+    this.focus = param.date ? param.date + '-01' : '2020-01-01'
+    const focusArr = this.focus.split('-')
+    this.yearAndMonth = focusArr[0] + '-' + focusArr[1]
+
     if (param.param) {
       const query: any = JSON.parse(param.param)
 
@@ -261,54 +393,10 @@ export default class IndexPage extends Vue {
     console.log(toWareki(2020))
 
     this.main(this.u)
-
-    /*
-    this.$axios.$get(this.u).then((response: any) => {
-      const result: Object = response.data
-      console.log(result)
-    })
-    */
-
-    /*
-    const data:any = this.main()
-    console.log(data)
-    */
-
-    // console.log(this.data)
-    /*
-    console.log(this.data)
-    console.log($data)
-    console.log(data)
-    console.log(this.description)
-    */
-
-    /*
-    if (!param.u) {
-      location.href = 'https://github.com/nakamura196/calendar'
-    }
-    this.u = param.u
-
-    if (param.param) {
-      const query = JSON.parse(param.param)
-
-      this.q = query.q ? query.q : this.q
-      this.collections = query.collections
-        ? query.collections
-        : this.collections
-    }
-    */
   }
 
   mounted () {
-    // 何か処理
-  }
-
-  updated () {
-    // 何か処理
-  }
-
-  destroyed () {
-    // 何か処理
+    this.$refs.calendar.checkChange()
   }
 }
 </script>
