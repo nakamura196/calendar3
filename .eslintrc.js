@@ -5,9 +5,9 @@ module.exports = {
     node: true
   },
   parserOptions: {
+    
   },
   extends: [
-    '@nuxtjs',
     '@nuxtjs/eslint-config-typescript',
     'plugin:nuxt/recommended'
   ],

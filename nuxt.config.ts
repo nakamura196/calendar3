@@ -1,12 +1,16 @@
-import { Configuration } from '@nuxt/types'
 import colors from 'vuetify/es5/util/colors'
 
-const nuxtConfig: Configuration = {
+export default {
+  typescript: {
+    typeCheck: true,
+    ignoreNotFoundWarnings: true
+  },
   mode: 'spa',
   /*
   ** Headers of the page
   */
   head: {
+    titleTemplate: '%s - ' + process.env.npm_package_name,
     title: process.env.npm_package_name || '',
     meta: [
       { charset: 'utf-8' },
@@ -37,7 +41,8 @@ const nuxtConfig: Configuration = {
   buildModules: [
     // Doc: https://github.com/nuxt-community/eslint-module
     '@nuxtjs/eslint-module',
-    '@nuxt/typescript-build'
+    '@nuxt/typescript-build',
+    '@nuxtjs/vuetify',
   ],
   /*
   ** Nuxt.js modules
@@ -45,8 +50,9 @@ const nuxtConfig: Configuration = {
   modules: [
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
-    "@nuxtjs/vuetify",
-    '@nuxtjs/pwa'
+    '@nuxtjs/pwa',
+    // Doc: https://github.com/nuxt-community/dotenv-module
+    '@nuxtjs/dotenv'
   ],
   /*
   ** Axios module configuration
@@ -55,18 +61,38 @@ const nuxtConfig: Configuration = {
   axios: {
   },
   /*
+  ** vuetify module configuration
+  ** https://github.com/nuxt-community/vuetify-module
+  */
+  vuetify: {
+    customVariables: ['~/assets/variables.scss'],
+    theme: {
+      dark: true,
+      themes: {
+        dark: {
+          primary: colors.blue.darken2,
+          accent: colors.grey.darken3,
+          secondary: colors.amber.darken3,
+          info: colors.teal.lighten1,
+          warning: colors.amber.base,
+          error: colors.deepOrange.accent4,
+          success: colors.green.accent3
+        }
+      }
+    }
+  },
+  /*
   ** Build configuration
   */
   build: {
-    publicPath: "/static/",
+    publicPath: '/static/',
     /*
     ** You can extend webpack config here
     */
-    extend () {
+    extend (config:any, ctx:any) {
     }
   },
   router: {
-    base : "/calendar3/"
+    base: '/calendar3/'
   }
 }
-export default nuxtConfig

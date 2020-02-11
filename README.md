@@ -1,6 +1,6 @@
-# calendar5
+# calendar6
 
-> My sweet Nuxt.js project
+> My doozie Nuxt.js project
 
 ## Build Setup
 
