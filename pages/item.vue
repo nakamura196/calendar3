@@ -175,6 +175,11 @@ export default class IndexPage extends Vue {
 
   data: any = {}
 
+  private get calendarInstance (): Vue & { prev: () => void, next: () => void,
+    getFormatter: (format: any) => any } {
+    return this.$refs.calendar as Vue & { prev: () => void, next: () => void, getFormatter: (format: any) => any }
+  }
+
   get fullTitle () {
     const { start, end } = this
     if (!start || !end) {
@@ -205,7 +210,7 @@ export default class IndexPage extends Vue {
   }
 
   get monthFormatter () {
-    return this.$refs.calendar.getFormatter({
+    return this.calendarInstance.getFormatter({
       timeZone: 'UTC',
       month: 'long'
     })
@@ -372,6 +377,72 @@ export default class IndexPage extends Vue {
     this.search()
   }
 
+  nth (d: number) {
+    return d > 3 && d < 21
+      ? 'th'
+      : ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][d % 10]
+  }
+
+  /*
+  viewDay({ date: any }) {
+    this.focus = date;
+    this.type = "day";
+  }
+
+  prev() {
+    this.$refs.calendar.prev();
+    this.updatePath();
+  }
+
+  next() {
+    this.$refs.calendar.next();
+    this.updatePath();
+  }
+
+  showEvent({ nativeEvent: any, event: any }) {
+    const open = () => {
+      this.selectedEvent = event;
+      this.selectedElement = nativeEvent.target;
+      setTimeout(() => (this.selectedOpen = true), 10);
+    };
+
+    if (this.selectedOpen) {
+      this.selectedOpen = false;
+      setTimeout(open, 10);
+    } else {
+      open();
+    }
+
+    nativeEvent.stopPropagation();
+  }
+
+  updateRange({ start, end }) {
+    // You could load events from an outside source (like database) now that we have the start and end dates on the calendar
+    this.start = start;
+    this.end = end;
+  }
+
+  handleDateClick(arg: any) {
+    window.open(arg.event.id, "_blank");
+  }
+
+  updatePath() {
+    let focus_arr = this.focus.split("-");
+    let yearAndMonth = focus_arr[0] + "-" + focus_arr[1];
+    this.$router.push({
+      name: "item",
+      query: {
+        param: JSON.stringify({
+          q: this.q,
+          collections: this.collections
+        }),
+        date: yearAndMonth,
+        u: this.u
+      }
+    });
+  }
+  */
+
   created () {
     const param: any = Object.assign({}, this.$route.query)
 
@@ -396,7 +467,7 @@ export default class IndexPage extends Vue {
   }
 
   mounted () {
-    this.$refs.calendar.checkChange()
+    // this.calendarInstance.checkChange()
   }
 }
 </script>
