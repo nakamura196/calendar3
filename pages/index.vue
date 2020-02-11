@@ -74,7 +74,7 @@ function toWareki (y: number): string {
     }
   },
   */
-  head (): object {
+  head (): any {
     return {
       titleTemplate: null,
       title: 'なかむらさとる'
@@ -106,7 +106,7 @@ export default class IndexPage extends Vue {
   u: string = ''
   description: string = 'test'
   searchPlaceHolder: string = ''
-  index: Object = {}
+  index: any = {}
   collections: Array<string> = []
   test:Array<number> = [1, 3, 4]
   ip: string = ''
